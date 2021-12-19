@@ -12,6 +12,7 @@ const {	buildSchema } = require('graphql');
 const del = require('del');
 const schemaFile = require('../test-fixtures/schemas/basic-graphql-schema-1');
 const schemaFileAdvanced = require('../test-fixtures/schemas/advanced-graphql-schema');
+const manifest = require('../test-fixtures/manifests/basicManifest1OpenApi.json');
 const GraphQL2REST = require('../../src/index');
 
 const {
@@ -27,8 +28,16 @@ const { execute } = require('../mocks/graphql');
 // warning: these temp folders will be deleted entirely:
 const GQL_OUTPUT_FOLDER = path.resolve(__dirname, '../test-outputs/gqloutput');
 const GQL_OUTPUT_FOLDER_ADVANCED_TESTS = path.resolve(__dirname, '../test-outputs/gqloutput_advanced');
+const OPENAPI_OUTPUT = path.resolve(__dirname, '../test-outputs/openapi.yml');
+const OPENAPI_OUTPUT_ADVANCED_TESTS = path.resolve(__dirname, '../test-outputs/openapi_advanced.yml');
 
 chai.use(chaifs);
+
+const api = {
+	version: '1',
+	url: '/testApp/v1',
+	title: 'Test App'
+};
 
 
 /** * GenerateGqlQueryFiles Tests ***/
@@ -37,17 +46,21 @@ describe('generateGqlQueryFiles basic file creation tests:', () => {
 	let schema;
 	const g = GraphQL2REST;
 	const outputPath = GQL_OUTPUT_FOLDER;
+	const outputOpenApi = OPENAPI_OUTPUT;
 
 	before(() => {
 		schema = buildSchema(schemaFile.schema);
 		del.sync(outputPath);
 		expect(outputPath).to.not.be.a.path();
+		del.sync(outputOpenApi);
+		expect(outputOpenApi).to.not.be.a.path();
 		clearLastConsolePrint();
 		clearBuffer();
 	});
 
 	after(() => {
 		del.sync(outputPath);
+		del.sync(outputOpenApi);
 		clearBuffer();
 	});
 
@@ -73,6 +86,11 @@ describe('generateGqlQueryFiles basic file creation tests:', () => {
 	test('index.js is created inside mutations folder', () => {
 		expect(`${outputPath}/mutations/index.js`).to.be.a.file();
 	});
+
+	test('generate openapi file', () => {
+		g.generateOpenAPIFile(outputOpenApi, schema, manifest, api);
+		expect(outputOpenApi).to.be.a.path();
+	});
 });
 
 
@@ -80,16 +98,19 @@ describe('generateGqlQueryFiles advanced schema parsing validation:', () => {
 	let schema;
 	const g = GraphQL2REST;
 	const outputPath = GQL_OUTPUT_FOLDER_ADVANCED_TESTS;
+	const outputOpenApi = OPENAPI_OUTPUT_ADVANCED_TESTS;
 
 	before(() => {
 		schema = buildSchema(schemaFileAdvanced.schema);
 		del.sync(outputPath);
+		del.sync(outputOpenApi);
 		clearLastConsolePrint();
 		clearBuffer();
 	});
 
 	after(() => {
 		del.sync(outputPath);
+		del.sync(outputOpenApi);
 		clearBuffer();
 	});
 
@@ -106,6 +127,11 @@ describe('generateGqlQueryFiles advanced schema parsing validation:', () => {
 		expect(result).to.equal(true);
 		const queries = require(outputPath);
 		expect(queries.mutations.signup.indexOf('createdAt')).to.equal(-1); */
+	});
+
+	test('generate openapi file', () => {
+		g.generateOpenAPIFile(outputOpenApi, schema, manifest, api);
+		expect(outputOpenApi).to.be.a.path();
 	});
 });
 

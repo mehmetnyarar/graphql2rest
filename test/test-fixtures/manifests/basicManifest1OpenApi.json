@@ -1,0 +1,220 @@
+{
+	"endpoints": {
+		"/api/tweets/:id": {
+			"get": {
+				"operation": "Tweet",
+				"responses": {
+                    "200": {
+                        "description": "Returns a tweet"
+                    }
+                }
+			},
+			"delete": {
+				"operation": "deleteTweet",
+				"successStatusCode": 204,
+				"responses": {
+                    "204": {
+                        "description": "Deletes a tweet"
+                    }
+                }
+			},
+			"patch": {
+				"operation": "updateTweet",
+				"params": {
+					"tweetId": "id"
+				},
+				"hide": ["oid", "active"],
+				"responses": {
+                    "200": {
+                        "description": "Updates a tweet"
+                    }
+                }
+			}
+		},
+
+		"/api/tweets": {
+			"post": {
+				"operation": "createTweet",
+				"params": {
+					"tweetBody": "text"
+				},
+				"successStatusCode": 201,
+				"responses": {
+                    "201": {
+                        "description": "Creates a tweet"
+                    }
+                }
+			},
+			"put": {
+				"operation": "Tweets",
+				"params": {
+					"deleteMe1": "__DELETED__",
+					"deleteMe2": "__DELETED__",
+					"nested.delete.me": "__DELETED__",
+					"array.of.objs.deleted": "__DELETED__",
+					"array.of.nonexistent": "__DELETED__",
+					"tweetBody": "text"
+				},
+				"successStatusCode": 204,
+				"responses": {
+                    "204": {
+                        "description": "Updates multiple tweets"
+                    }
+                }
+			}
+		},
+
+		"/api/relationships/:first/:second": {
+			"post": {
+				"operation": "createTweetRelationship",
+				"params": {
+					"tweetId1": "first",
+					"tweetId2": "second"
+				},
+				"wrapRequestBodyWith": "relationship",
+				"successStatusCode": 201,
+				"responses": {
+                    "201": {
+                        "description": "Creates a tweet relationship"
+                    }
+                }
+			},
+			"patch": {
+				"operation": "updateTweetRelationship",
+				"params": {
+					"tweetId1": "first",
+					"tweetId2": "second"
+				},
+				"wrapRequestBodyWith": "updateData.vars.relationship",
+				"responses": {
+                    "200": {
+                        "description": "Updates a tweet relationship"
+                    }
+                }
+			},
+			"put": {
+				"operation": "updateTweetRelationship",
+				"params": {
+					"tweetId1": "first",
+					"tweetId2": "second"
+				},
+				"requestMiddlewareFunction": "changeIncomingParams",
+				"responses": {
+                    "200": {
+                        "description": "Updates  tweet relationship"
+                    }
+                }
+			}
+		},
+
+		"/api/no-endpoint-should-be-created-here": {
+			"patch": {
+				"operation": "nonExistentOperation",
+				"params": {
+					"fakeParam": "operationIsNotInSchema"
+				},
+				"responses": {
+                    "404": {
+                        "description": "Invalid endpoint"
+                    }
+                }
+			}
+		},
+
+		"/api/users": {
+			"get": {
+				"operation": "Users",
+				"responses": {
+                    "200": {
+                        "description": "Returns users"
+                    }
+                }
+			}
+		},
+
+		"/api/notifications": {
+			"get": {
+				"operations": [
+					{
+						"operation": "NotificationsLegacy",
+						"condition": {
+							"myquery": {
+								"$exists": true
+							}
+						}
+
+					},
+					{
+						"operation": "Notifications",
+						"condition": {
+							"myquery": {
+								"$exists": false
+							}
+						}
+					}
+				],
+				"responses": {
+                    "200": {
+                        "description": "Returns notifications"
+                    }
+                }
+			},
+
+			"post": {
+				"operations": [
+					{
+						"operation": "preprocessNotificationsForUser",
+						"condition": {
+							"command": {
+								"$exists": false
+							},
+							"wrapRequestBodyWith": "wrapper.data"
+						}
+					},
+					{
+						"operation": "createNotificationLegacy",
+						"params": {
+							"notification": "__DELETED__"
+						},
+						"condition": {
+							"command": {
+								"$exists": true
+							}
+						},
+						"wrapRequestBodyWith": "wrapper.data"
+					}
+				],
+				"successStatusCode": 201,
+				"responses": {
+                    "201": {
+                        "description": "Creates a notification"
+                    }
+                }
+			}
+		},
+
+
+
+		"/api/bad-endpoint": {
+			"invalidVerb": {
+				"operations": "NotificationsMeta",
+				"responses": {
+                    "404": {
+                        "description": "Bad endpoint"
+                    }
+                }
+			}
+		}
+	},
+
+
+	"errors": {
+		"errorCodes": {
+			"4003": {
+				"httpCode": 403,
+				"errorDescription": "User is unauthorized. Please use a correct Bearer token."
+
+			}
+		}
+	}
+}
